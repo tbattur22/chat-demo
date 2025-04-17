@@ -3,45 +3,77 @@ import { type SharedData, User } from '@/types';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import ChatAppLayout from '@/layouts/chat-app-layout';
 import ChatContent from './chatContent';
-import '../echo.js';
+// import '../echo';
 
-export default function Chat({ friend, curUser, messages }: { friend: User, curUser: User, messages: Object[] }) {
-    const { auth } = usePage<SharedData>().props;
+export default function Chat({ csrfToken, friend, curUser, messages }: { csrfToken: string, friend: User, curUser: User, messages: Object[] }) {
+    const props = usePage<SharedData>().props;
+    const auth = props.auth;
     console.log(`Chat():auth:friend:curUser:messages`, auth, friend, curUser, messages);
     const breadcrumbs = [
         { title: "Home", href: "/" },
         { title: "Live Chat", href: "#" }
     ];
-    // const messages: Object[] = [
-    //     { id: 1, text: "Hi Steve", sender_id: 1 },
-    //     { id: 2, text: "Hi Battur", sender_id: 2 },
-    //     { id: 3, text: "How are you", sender_id: 1 },
-    //     { id: 4, text: "I am good, how are you", sender_id: 2 },
-    //     { id: 5, text: "I am good, thanks", sender_id: 1 },
-    //     { id: 6, text: "Question from Steve", sender_id: 2 },
-    //     { id: 7, text: "Answer from Battur", sender_id: 1 }
-    // ];
     const [allMessages, setAllMessages] = useState(messages);
 
     const sendMessage = (msg: string) => {
-        console.log(`Chat():sendMessage():msg`, msg);
-        router.post(route('messages.create', friend.id), { message: msg });
+        console.log(`Chat():SendMessage():msg`, msg);
+        // router.post(route('messages.create', friend.id), { message: msg });
+        const formData = { message: msg };
+        const dataObj = new URLSearchParams(formData);
+        console.log(`Chat:SendMessage:token`, csrfToken);
+        console.log(`Chat:SendMessage:dataObj toString`, dataObj.toString());
+        // formData.append("message", msg);
+        const url = `${window.location.protocol}//${window.location.host}/messages/${friend.id}`;
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: dataObj.toString()
+        };
+        // console.log(`sendMessage():post request url`, url);
+        // return false;
+        fetch(url, options)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(responseData => {
+                console.log('Chat:SendMessage:fetch success: calling chat endpoint', responseData);
+                // router.visit(route('chat', friend.id));
+                setAllMessages([
+                    ...allMessages,
+                    responseData
+                ]);
+            })
+            .catch(error => {
+                console.error('Chat:SendMessage:fetch Error:', error);
+            });
     }
+
     useEffect(() => {
-        const channel = window.Echo.channel(`chat.${friend.id}`);
-        console.log('useEffect:Chat:channel', channel);
-        channel.listen("MessageSent", (newMessage: string) => {
-            console.log(`useEffect:Chat:MessageSent event:`, newMessage);
-            // setAllMessages((prevAllMessages) => [
-            //     ...prevAllMessages,
-            //     newMessage.newMessage,
-            // ]);
+        const channel = window.Echo.private(`chat.${auth.user.id}`);
+        console.log('Chat:useEffect:channel', channel);
+        channel.listen("MessageSent", (data: Object) => {
+            console.log(`Chat:useEffect:MessageSent event:`, data);
+            if (data) {
+                console.log(`Chat:useEffect:messages before updating`, [...allMessages]);
+                setAllMessages([
+                    ...allMessages,
+                    data
+                ]);
+            }
         });
         return () => {
+            console.log(`Chat:useEffect:unsubscribing from the channel`);
             channel.unsubscribe();
         };
     }, []);
 
+    console.log(`Chat:before render: allMessages:`, allMessages);
     return (
         <ChatAppLayout breadcrumbs={breadcrumbs}>
             {auth.user && (

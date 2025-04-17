@@ -14,6 +14,14 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
+    server: {
+        cors: {
+            origin: [
+                'https://backend.laravel',
+                'http://localhost:8000',
+            ],
+        },
+    },
     esbuild: {
         jsx: 'automatic',
     },

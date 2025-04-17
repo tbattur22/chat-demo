@@ -18,21 +18,7 @@ export default function ChatContent({ curUser, friend, messages, sendMessage }: 
     useEffect(() => {
         const ele = document.querySelector('div.msg-container');
         ele?.scrollTo(0, ele?.scrollHeight);
-    }, []);
-    useEffect(() => {
-        const channel = window.Echo.channel(`chat.${friend.id}`);
-        channel.listen("MessageSent", (newMessage: string) => {
-            console.log(`useEffect:ChatContent:MessageSent event:`, newMessage);
-            // setAllMessages((prevAllMessages) => [
-            //     ...prevAllMessages,
-            //     newMessage.newMessage,
-            // ]);
-        });
-        return () => {
-            channel.unsubscribe();
-        };
-    }, []);
-
+    }, [messages]);
 
     return (
         <div className='flex flex-col justify-end'>

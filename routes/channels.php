@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 
 Broadcast::channel('chat.{id}', function ($user, $id) {
-    Log::info("broadcast to chat.{$id}. cur user id: {$user->id}");
+    Log::info("broadcast to chat.{$id}. cur listening user id: {$user->id}");
     return (int) $user->id === (int) $id;
     // return true;
 });
