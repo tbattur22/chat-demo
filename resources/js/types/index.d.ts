@@ -41,3 +41,16 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export interface HomeMsgsNotSeen {
+    [number]: number
+}
+
+export interface MessageSent {
+    id: number,
+    sender_id: number,
+    receiver_id: number,
+    text: string,
+    created_at: string,
+    updated_at: string
+}

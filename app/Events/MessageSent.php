@@ -9,6 +9,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
  
 class MessageSent implements ShouldBroadcast
 {
@@ -50,8 +51,10 @@ class MessageSent implements ShouldBroadcast
         // return [
         //     new Channel("chat.{$this->userId}"),
         // ];
+        Log::info("Going to broadcast from {$this->message->sender_id} to {$this->message->receiver_id} text: {$this->message->text}");
         return [
             new PrivateChannel("chat.{$this->message->receiver_id}"),
+            new PrivateChannel("home.chat.{$this->message->receiver_id}"),
         ];
 
         // return [
