@@ -19,3 +19,4 @@ if (!window.Echo) {
 }
 
 console.log(`echo.js end running: window.Echo`, window.Echo);
+export default window.Echo;

@@ -8,10 +8,6 @@ use App\Models\User;
 use App\Events\MessageSent;
 use App\Http\Controllers\HomeController;
 
-// Route::get('/', function () {
-//     return Inertia::render('home');
-// })->name('home');
-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
 });

@@ -6,7 +6,6 @@ import ChatContentMsgContainer from '@/pages/chatContentMsgContainer';
 export default function ChatContent({ curUser, friend, messages, sendMessage }: { curUser: User, friend: User, messages: Object[], sendMessage: (msg: string) => void }) {
     const { auth } = usePage<SharedData>().props;
     const [typingMsg, setTypingMsg] = useState('');
-    // console.log(`ChatContent():messages`, messages);
 
     const onTyping = (e: SyntheticEvent) => {
         setTypingMsg(e.target.value);

@@ -4,12 +4,12 @@ import { Head, Link, usePage, router } from '@inertiajs/react';
 import ChatAppLayout from '@/layouts/chat-app-layout';
 import ChatContent from './chatContent';
 import { SendMessage, MarkAllMessagesAsSeen } from '@/services/model/ChatMessage';
-import '../echo';
+import echo from '../echo';
 
-export default function Chat({ csrfToken, friend, curUser, messages }: { csrfToken: string, friend: User, curUser: User, messages: Object[] }) {
+export default function Chat({ csrfToken, friend, curUser, messages }: { csrfToken: string, friend: User, curUser: User, messages: MessageSent[] }) {
     const props = usePage<SharedData>().props;
     const auth = props.auth;
-    console.log(`Chat():auth:friend:curUser:messages`, auth, friend, curUser, messages);
+    // console.log(`Chat():auth:friend:curUser:messages`, auth, friend, curUser, messages);
     const breadcrumbs = [
         { title: "Home", href: "/" },
         { title: "Live Chat", href: "#" }
@@ -17,7 +17,6 @@ export default function Chat({ csrfToken, friend, curUser, messages }: { csrfTok
     const [allMessages, setAllMessages] = useState(messages);
 
     const sendMessage = (msg: string) => {
-        console.log(`Chat():SendMessage():msg`, msg);
         SendMessage(csrfToken, friend.id, msg, allMessages, setAllMessages)
             .then((res) => {
                 console.log(`Chat:sendMessage():res`, res);
@@ -25,25 +24,18 @@ export default function Chat({ csrfToken, friend, curUser, messages }: { csrfTok
     }
 
     useEffect(() => {
-        const channel = window.Echo.private(`chat.${auth.user.id}`);
-        console.log('Chat:useEffect:channel', channel);
-        // MarkAllMessagesAsSeen(csrfToken, friend);
+        const channel = echo.private(`chat.${auth.user.id}`);
         channel.listen("MessageSent", (data: MessageSent) => {
-            console.log(`Chat:useEffect:MessageSent event:`, data);
-            console.log(`Chat:useEffect:messages before updating`, [...allMessages]);
-            setAllMessages([
-                ...allMessages,
-                data
-            ]);
+            setAllMessages(prevState => {
+                return [...prevState, data];
+            });
             MarkAllMessagesAsSeen(csrfToken, friend);
         });
         return () => {
-            console.log(`Chat:useEffect:unsubscribing from the channel`);
-            channel.unsubscribe();
+            channel.stopListening('MessageSent');
         };
     }, []);
 
-    console.log(`Chat:before render: allMessages:`, allMessages);
     return (
         <ChatAppLayout breadcrumbs={breadcrumbs}>
             {auth.user && (

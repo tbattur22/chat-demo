@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
-import { type SharedData, User } from '@/types';
+import { type SharedData, User, MessageSent } from '@/types';
 
-export async function SendMessage(csrfToken: string, friendId: number, msg: string, messages: object[], cb: Dispatch<SetStateAction<Object[]>>) {
+export async function SendMessage(csrfToken: string, friendId: number, msg: string, messages: MessageSent[], cb: Dispatch<SetStateAction<MessageSent[]>>) {
     const formData = { message: msg };
     const dataObj = new URLSearchParams(formData);
     console.log(`Chat:SendMessage:token`, csrfToken);
